@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Title</title>
+
+        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
+    </head>
+    <body>
+
+        <script>
+            // 1. 과거의 데이터를 준비합니다.
+            const 온도 = [20,21,22,23];
+            const 판매량 = [40,42,44,46];
+            const 원인 = tf.tensor(온도);
+            const 결과 = tf.tensor(판매량);
+
+            // 2. 모델의 모양을 만듭니다.
+            const X = tf.input({ shape: [1] });
+            const Y = tf.layers.dense({ units: 1 }).apply(X);
+            const model = tf.model({ inputs: X, outputs: Y });
+            const compileParam = {
+                optimizer: tf.train.adam(),
+                loss: tf.losses.meanSquaredError,
+            };
+            model.compile(compileParam);
+
+            // 3. 데이터로 모델을 학습시킵니다.
+            const fitParam = {
+                epochs: 100,
+                callbacks:{
+                    onEpochEnd: function (epoch, logs) {
+                        console.log('epoch', epoch, logs, 'RMSE=>', Math.sqrt(logs.loss));
+                    }
+                }
+            }
+
+            // 학습
+            model.fit(원인, 결과, fitParam).then(function (result) {
+
+                const 예측한결과 = model.predict(원인); // 예측시키기 / 결과 값도 tensor 임
+                예측한결과.print();
+
+                // model.save('downloads://lemon') // lemon 이라는 이름으로 download
+                // model.save('localstorage://lemon');
+                model.save('indexeddb://lemon');
+
+            });
+        </script>
+    </body>
+</html>
