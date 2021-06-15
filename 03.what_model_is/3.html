@@ -29,7 +29,7 @@
                 // 3. 데이터로 모델을 학습시킵니다.
                 // const fitParam = { epochs: 7000} // epoch : 몇번 반복 학습 시킬건지
                 const fitParam = {
-                    epochs: 1000,
+                    epochs: 4000,
                     callbacks:{
                         onEpochEnd: function (/* 몇 번째 */epoch, /* 객체 */ logs) {
                             console.log('epoch', epoch, logs, 'RMSE=>', Math.sqrt(logs.loss)); // MSE 에 root 씌워 RMSE(Root Mean Squared Error) 로 전환
@@ -47,6 +47,21 @@
                     console.log('예측 완료 !');
                 });
 
+                const [weightTensor, biasTensor] = model.getWeights();
+                const weight = weightTensor.arraySync()[0][0]; // 비동기인 array() 대신 편의를 위해 arraySync() 를 사용 (성능 이슈는 있지만 간편)
+                const bias = biasTensor.arraySync()[0];
+
+                const isModelValid = 판매량.every((c, i) => {
+                    const test = weight * 온도[i] + bias;  // 각각의 예상 값은 모델의 공식에 성립한다.
+                    if (c !== test) {
+                        // when model is not valid
+                        console.log('Model NOT VALID ::: weight, bias', weight, bias);
+                        console.log('Model NOT VALID ::: 판매량, weight*온도+bias', c, test);
+                    }
+                    return c === test;
+                });
+
+                console.log('isModelValid ::: ', isModelValid);
 
                 return model;
             }
@@ -58,7 +73,7 @@
              *  x: input / y: output
              *  a: weight (가중치) / b: bias (편향)
              *
-             *  위 식을 성립시키는 a 와 b 값을 찾는 것이 machine learning 의 목표이다.
+             *  위 식을 성립시키는 a 와 b 값을 찾는 것이 지도학습의 목표이다.
              * */
 
             // model 을 생성하는 것은 무거운 작업이지만
@@ -81,11 +96,11 @@
                 const weight = weightTensor.arraySync()[0][0]; // 비동기인 array() 대신 편의를 위해 arraySync() 를 사용 (성능 이슈는 있지만 간편)
                 const bias = biasTensor.arraySync()[0];
 
-                const showHowModelIsMade = resultInArray.every((c, i) => {
-                    const test = weight * 예상온도[i] + bias;  // 각각의 예상 값은 모델의 공식에 성립해야만.
+                const showHowModelPredicts = resultInArray.every((c, i) => {
+                    const test = weight * 예상온도[i] + bias;  // 각각의 예상 값은 모델의 공식에 성립한다.
                     return c.toFixed(3) === test.toFixed(3);
                 });
-                console.log('showHowModelIsMade ::: ', showHowModelIsMade);
+                console.log('showHowModelPredicts ::: ', showHowModelPredicts);
             }
 
             (async function() {

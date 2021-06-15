@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
+    <script src="5.js"></script>
+</head>
+<body>
+    <script>
+        const input = tf.tensor(보스톤_원인);
+        const output = tf.tensor(보스톤_결과);
+
+        const X = tf.input({ shape: [13]});
+        const Y = tf.layers.dense({ units: 1}).apply(X);
+        const model = tf.model({ inputs: X, outputs: Y});
+        const compileParam = { optimizer: tf.train.adam(), loss: tf.losses.meanSquaredError };
+        model.compile(compileParam);
+
+        const fitParam = {
+            epochs: 1000,
+            callbacks: {
+                onEpochEnd:
+                    (epoch, logs) => {
+                        console.log('epoch', epoch, logs, 'RMSE => ', Math.sqrt(logs.loss));
+                    }
+            }
+        }
+        model.fit(input, output, fitParam).then((result) => {
+            const predictedResult = model.predict(input);
+            predictedResult.print();
+
+            const weights = model.getWeights();
+
+            // weights list
+            console.log(weights[0].arraySync());
+
+            // bias
+            console.log(weights[1].arraySync());
+
+        })
+
+    </script>
+</body>
+</html>
