@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis"></script>
+    <script src="../05.multiple_inputs/5.js"></script>
+</head>
+<body>
+    <script>
+        const input = tf.tensor(보스톤_원인);
+        const output = tf.tensor(보스톤_결과);
+
+        const X = tf.input({ shape: [13]}); // input layer
+        const H1 = tf.layers.dense({ units: 13, activation: 'relu' }).apply(X); // hidden layer
+        const H2 = tf.layers.dense({ units: 13, activation: 'relu' }).apply(H1); // hidden layer // 늘어날 수록 느려짐
+        const Y = tf.layers.dense({ units: 1}).apply(H2); // output layer
+
+        const model = tf.model({ inputs: X, outputs: Y});
+        const compileParam = { optimizer: tf.train.adam(), loss: tf.losses.meanSquaredError };
+        model.compile(compileParam);
+
+        // model 요약 정보 렌더링
+        tfvis.show.modelSummary({ name: 'summary', tab: 'model'}, model);
+
+        const _history = [];
+        const fitParam = {
+            epochs: 500,
+            callbacks: {
+                onEpochEnd:
+                    (epoch, logs) => {
+                        console.log('epoch', epoch, logs, 'RMSE => ', Math.sqrt(logs.loss));
+                        _history.push(logs);
+                        // 실시간 시각화
+                        tfvis.show.history({name: 'loss', tab: 'history'}, _history, ['loss'])
+                    }
+            }
+        };
+
+
+        model.fit(input, output, fitParam).then((result) => {
+            const predictedResult = model.predict(input);
+            predictedResult.print();
+
+            const weights = model.getWeights();
+            // weights list
+            console.log(weights[0].arraySync());
+            // bias
+            console.log(weights[1].arraySync());
+
+
+        })
+
+
+    </script>
+</body>
+</html>
