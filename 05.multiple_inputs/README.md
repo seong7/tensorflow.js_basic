@@ -22,7 +22,7 @@
 
 ---
 
-위 Data 로 학습한 model 의 weight 를 자세히 살펴보자. (학습 정보는 [5.js](5.js))
+위 Data 로 학습한 model 의 weight 를 자세히 살펴보자. (학습 정보는 [5.html](5.html))
 
 각 Column 의 weight 는 아래의 배열과 같은데,
 
